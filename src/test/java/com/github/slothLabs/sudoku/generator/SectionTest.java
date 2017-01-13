@@ -3,6 +3,8 @@ package com.github.slothLabs.sudoku.generator;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Set;
+
 import static org.junit.Assert.*;
 
 public class SectionTest {
@@ -27,6 +29,18 @@ public class SectionTest {
         final int expSize = 9;
 
         assertEquals(expSize, section.getSize());
+    }
+
+    @Test
+    public void constructorShouldSetPossiblesToValuesOneThroughSize() {
+        final int expNumPossibles = 9;
+
+        assertEquals(expNumPossibles, section.getNumberOfPossibles());
+
+        final Set<Integer> possibles = section.getPossibles();
+        for (int i = 0; i < expNumPossibles; ++i) {
+            assertTrue(possibles.contains(i + 1));
+        }
     }
 
     @Test
@@ -61,6 +75,22 @@ public class SectionTest {
     }
 
     @Test
+    public void settingValuesInASectionShouldDecreaseTheNumberOfPossibles() {
+        section.setValue(0, 3);
+        section.setValue(1, 4);
+
+        assertEquals(2, section.getNumberOfValues());
+    }
+
+    @Test
+    public void settingDuplicatesInASectionShouldHaveNoEffect() {
+        section.setValue(0, 3);
+        section.setValue(1, 3);
+
+        assertEquals(1, section.getNumberOfValues());
+    }
+
+    @Test
     public void isCompleteShouldReturnTrueWhenNumberOfValuesEqualsSize() {
         for (int i = 0; i < section.getSize(); ++i) {
             section.setValue(i, i + 1);
@@ -77,18 +107,33 @@ public class SectionTest {
 
     @Test(expected = IndexOutOfBoundsException.class)
     public void settingAValueAtNegativeIndexShouldThrowException() {
-        section.setValue(-5, 10);
+        section.setValue(-5, 8);
     }
 
     @Test
-    public void clearingASetValueShouldReduceNumberOfValues() {
+    public void clearingAValueAtAnIndexShouldReduceNumberOfValues() {
         section.setValue(0, 3);
         section.setValue(1, 4);
 
         assertEquals(2, section.getNumberOfValues());
 
-        section.clearValue(1);
+        section.clearValueAt(1);
 
+        assertEquals(1, section.getNumberOfValues());
+    }
+
+    @Test
+    public void clearingAValueAtAnIndexMultipleTimesShouldHaveNoEffect() {
+        section.setValue(0, 3);
+        section.setValue(1, 4);
+
+        assertEquals(2, section.getNumberOfValues());
+
+        section.clearValueAt(1);
+
+        assertEquals(1, section.getNumberOfValues());
+
+        section.clearValueAt(1);
         assertEquals(1, section.getNumberOfValues());
     }
 
@@ -130,17 +175,6 @@ public class SectionTest {
     @Test(expected = IndexOutOfBoundsException.class)
     public void getValueAtShouldThrowIfPassedIndexOfSize() {
         section.getValueAt(section.getSize());
-    }
-
-    @Test
-    public void isValidShouldReturnFalseIfAnyDuplicatesArePresent() {
-        for (int i = 0; i < section.getSize(); ++i) {
-            section.setValue(i, i + 1);
-        }
-
-        section.setValue(5, section.getValueAt(6));
-
-        assertFalse(section.isValid());
     }
 
     @Test
